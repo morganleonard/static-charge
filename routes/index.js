@@ -3,34 +3,148 @@ var router = express.Router();
 var fs = require('fs');
 var marked = require('marked');
 
-// /* GET home page. */
-// router.get('/', function(request, response, next) {
-//   response.render('index', { title: "Morgl's Blog" });
-// });
 
-//create routes for each page in posts directory
+//create variable for path to posts directory
 var postsDir = __dirname + "/../posts/";
+
+//read contents of posts directory
 fs.readdir(postsDir, function(error, directoryContents) {
 	if (error){
 		throw new Error(error);
 	}
 
+	//create 'posts' object containing parsed markdown contents for each post
 	var posts = directoryContents.map(function(filename) {
 		var postName = filename.replace('.md', '');
-		var contents = fs.readFileSync(postsDir + filename, {encoding: 'utf-8'});
-		return {postName: postName, contents: marked(contents)};
+		
+		//read entire contents of file
+		var nonParsedContents = fs.readFileSync(postsDir + filename, {encoding: 'utf-8'});
+		
+		//split off header with '---' delimiter
+		var splitContents = nonParsedContents.split('---')
+	
+		//pull out 'date' info from split file
+		var date = splitContents[1];
+		
+		//pull out 'contents' from split file
+		var contents = splitContents[2];
+	
+		return {postName: postName, contents: marked(contents), date: date};
 	});
 
+	// console.log(posts)
+
+
+	//sort 'posts' object by date, oldest to newest
+	posts.sort(function(post1, post2) {
+		if (post1.date > post2.date) {
+			return -1
+		}
+		if (post1.date < post2.date) {
+			return 1
+		}
+		return 0;
+	})
+
+	 // console.log("Posts after sort: ");
+	 // console.log(posts)
+
+	//loop to add previousPost and nextPost key values to each post in posts
+	for(i = 0; i < posts.length; i++) {
+		
+		//set previousPost if there is one
+		if(i != 0) {
+			posts[i].previousPost = posts[i-1].postName
+		} else {
+			posts[i].previousPost = ''
+		}
+
+		//set nextPost if there is one
+		if(i < (posts.length - 1)) {
+			posts[i].nextPost = posts[i+1].postName
+		} else {
+			posts[i].nextPost = ''
+		}
+
+	}	
+
+	// console.log("Posts after adding previousPost and nextPost: ");
+	// console.log(posts)
+
+
+	//create route for index page
 	router.get('/', function(request, response) {
 		response.render('index', {posts:posts, title: 'all posts'})
 	});
 
+
+	//loop through posts object and create route to each post page
 	posts.forEach(function(post) {
 		router.get('/' + post.postName, function(request, response) {
-			response.render('post', {postContents: post.contents})
+			response.render('post', {postContents: post.contents, date: post.date, prevPost: post.previousPost, nextPost: post.nextPost})
+			//response.render('post', {postContents: post.contents, date: post.date})
 		})
 	})
+
 })
+
+
+module.exports = router;
+
+
+
+
+/************************************ OLD CODE ******************************************/
+
+
+
+// /*******************************BEGIN NEW LOOP *****************************************/
+
+// 	//wrapper function
+// 	function makeRouteForPost(i, posts) {
+// 		var currentI = i;
+// 		var makeRoute = function() {
+// 			router.get('/' + posts[currentI].postName, function(request, response, posts) {
+// 			response.render('post', {postContents: posts[currentI].contents, date: posts[currentI].date, prevPost: posts[currentI-1], nextPost: post[currentI+1]}) 
+// 			})
+// 		console.log(post[currentI]);
+// 		console.log("current I: " + currentI);
+// 		}
+// 		return makeRoute;
+// 	}
+
+// 	for(i = 0; i < posts.length; i++) {
+// 		{
+// 			console.log(i);
+// 			makeRouteForPost(i, posts);
+// 			// router.get('/' + posts[i].postName, function(request, response, posts) {
+// 			// response.render('post', {postContents: posts[i].contents, date: posts[i].date, prevPost: posts[i-1], nextPost: post[i+1]}) 
+// 			// })
+// 			// console.log(post[i]);
+// 		}
+// 	}	
+
+
+// /*******************************END NEW LOOP *****************************************/
+
+
+
+///*******************************BEGIN OLD LOOP *****************************************/
+// 	//original loop through posts object and create route to each post page
+// 	posts.forEach(function(post) {
+// 		router.get('/' + post.postName, function(request, response) {
+// 			response.render('post', {postContents: post.contents, date: post.date, prevPost: 'PreviousPost', nextPost: 'NextPost'})
+// 			//response.render('post', {postContents: post.contents, date: post.date})
+// 		})
+// 	})
+///*******************************END OLD LOOP *****************************************/
+
+
+
+// /* GET home page. */
+// router.get('/', function(request, response, next) {
+//   response.render('index', { title: "Morgl's Blog" });
+// });
 
 
 // 	directoryContents.forEach(function(postFileName) {
@@ -50,4 +164,4 @@ fs.readdir(postsDir, function(error, directoryContents) {
 // 	})
 // })
 
-module.exports = router;
+
