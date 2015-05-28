@@ -3,13 +3,14 @@ extends layout
 title!= title
 
 block content
-  h1 title
-  != postContents
+  h1!= post.title
+  != post.contents
 
 block footer
  div.nav
    h3 Post Date: 
-    p= date
-   a(href='/' + prevPost) <-- Previous Post
-   a(href='/' + nextPost) Next Post -->
+    p= post.date
+   a(href='/' + post.prevPost) <-- Previous Post
+   a(href='/' + post.nextPost) Next Post -->
+ a(href='/') Home
         

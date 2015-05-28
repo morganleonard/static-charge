@@ -13,23 +13,35 @@ fs.readdir(postsDir, function(error, directoryContents) {
 		throw new Error(error);
 	}
 
-	//create 'posts' object containing parsed markdown contents for each post
+	//create 'posts' object containing parsed metadata and markdown contents for each post
 	var posts = directoryContents.map(function(filename) {
 		var postName = filename.replace('.md', '');
 		
 		//read entire contents of file
 		var nonParsedContents = fs.readFileSync(postsDir + filename, {encoding: 'utf-8'});
 		
-		//split off header with '---' delimiter
+		//split off metadata with '---' delimiter
 		var splitContents = nonParsedContents.split('---')
+		//console.log(splitContents)
+
+		//split up metadata keys
+		var metaData = splitContents[1].split('\n')
+		console.log("***metaData: " + metaData)
 	
-		//pull out 'date' info from split file
-		var date = splitContents[1];
+		//pull out 'date' info from metaData array
+		var date = metaData[1].replace('Date: ', '')
+		//var date = splitContents[1];
+		console.log("***Date: " + date);
+
+		//pull out 'title' info from metaData array
+		var title = metaData[2].replace('Title: ', '')
+		//var date = splitContents[1];
+		console.log("***Title: " + title);
 		
 		//pull out 'contents' from split file
 		var contents = splitContents[2];
 	
-		return {postName: postName, contents: marked(contents), date: date};
+		return {postName: postName, contents: marked(contents), date: date, title: title};
 	});
 
 	// console.log(posts)
@@ -74,15 +86,15 @@ fs.readdir(postsDir, function(error, directoryContents) {
 
 	//create route for index page
 	router.get('/', function(request, response) {
-		response.render('index', {posts:posts, title: 'all posts'})
+		response.render('index', {posts:posts, title: 'All My Sh!t, Look At It!'})
 	});
 
 
 	//loop through posts object and create route to each post page
 	posts.forEach(function(post) {
 		router.get('/' + post.postName, function(request, response) {
-			response.render('post', {postContents: post.contents, date: post.date, prevPost: post.previousPost, nextPost: post.nextPost})
-			//response.render('post', {postContents: post.contents, date: post.date})
+			response.render('post', {post: post})
+			//response.render('post', {postContents: post.contents, date: post.date, prevPost: post.previousPost, nextPost: post.nextPost, title: post.title})
 		})
 	})
 
