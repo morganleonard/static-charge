@@ -7,9 +7,21 @@ a {
   color: #00B7FF;
 }
 
+h1 {
+  text-align: center;
+  font-size: 2.5em;
+  background-color: #CCFFFF;
+}
+
+p {
+  font-family: 'Merriweather', serif;
+  font-size: 1.2em;
+}
+
 /* page footer */
 
 footer {
+  border-top: 1px dashed #d2d2d2;
   text-align: center;
   margin: 3em 0;
 }
@@ -24,4 +36,9 @@ footer .nav a {
   padding: 0 0.5em;
   font-size: 1.2em;
   text-decoration: none;
+}
+
+footer a:hover {
+  color: #ff8000;
+  text-decoration: underline;
 }
